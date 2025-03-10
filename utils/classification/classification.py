@@ -86,6 +86,9 @@ class SentimentAnalysisPipeline:
         self.X_test = None
         self.Y_train = None
         self.Y_test = None
+        self.trained_model = None  # Store trained model
+        self.feature_type = None  # Store feature extraction method
+
 
     def preprocess(self):
         self.X = self.df.iloc[:, 0:1]  # Select first column (reviews)
@@ -105,6 +108,7 @@ class SentimentAnalysisPipeline:
         self.cv = CountVectorizer(max_features=max_features, ngram_range=ngram_range)
         self.X_train_bow = self.cv.fit_transform(self.X_train['review']).toarray()
         self.X_test_bow = self.cv.transform(self.X_test['review']).toarray()
+        self.feature_type = "bow"
         print(f"Bag of Words applied with max_features={max_features}, ngram_range={ngram_range}")
 
     def apply_tfidf(self):
@@ -112,6 +116,7 @@ class SentimentAnalysisPipeline:
         self.tfidf = TfidfVectorizer()
         self.X_train_tfidf = self.tfidf.fit_transform(self.X_train['review']).toarray()
         self.X_test_tfidf = self.tfidf.transform(self.X_test['review']).toarray()
+        self.feature_type = "tfidf"
         print("TF-IDF applied...")
 
     def apply_word2vec(self, vector_size=100, window=10, min_count=1, workers=4):
@@ -127,7 +132,7 @@ class SentimentAnalysisPipeline:
         )
         
         # Save the model
-        self.word2vec_model.save("../../models/movie_review_sentiments.model")
+        self.word2vec_model.save("../../models/MovieReviewAnalysis.model")
         
         # Train the model
         self.word2vec_model.train(
@@ -144,6 +149,7 @@ class SentimentAnalysisPipeline:
         
         self.X = np.array(X_vectors)
         self.split_data()  # Re-split data with Word2Vec feature representation
+        self.feature_type = "word2vec"
 
     def train_and_evaluate(self, model_type="random_forest", feature_type="bow"):
         """Trains and evaluates a classification model using selected feature extraction."""
@@ -158,21 +164,43 @@ class SentimentAnalysisPipeline:
 
         # Choose classifier
         if model_type == "naive_bayes":
-            model = GaussianNB()
+            self.trained_model = GaussianNB()
         elif model_type == "random_forest":
-            model = RandomForestClassifier()
+            self.trained_model = RandomForestClassifier()
         else:
             raise ValueError("Invalid model_type. Choose from 'naive_bayes' or 'random_forest'.")
-        print("1")
+
         # Train and predict
-        model.fit(X_train_feature, self.Y_train)
-        Y_pred = model.predict(X_test_feature)
-        print("2")
+        self.trained_model.fit(X_train_feature, self.Y_train)
+        Y_pred = self.trained_model.predict(X_test_feature)
+
         # Evaluate model
         accuracy = accuracy_score(self.Y_test, Y_pred)
         confusion_mat = confusion_matrix(self.Y_test, Y_pred)
-        print("3")
+
         print(f"{model_type.upper()} with {feature_type.upper()} Accuracy: {accuracy}")
+
+    def predict_sentiment(self, text):
+        preprocessor = Preprocessing()
+        text = preprocessor.remove_html_tags(text)
+        text = preprocessor.remove_stopwords(text)
+        text = preprocessor.to_lowercase(text)
+
+        if self.feature_type == "bow":
+            text_vector = self.cv.transform([text]).toarray()
+        elif self.feature_type == "tfidf":
+            text_vector = self.tfidf.transform([text]).toarray()
+        elif self.feature_type == "word2vec":
+            words = text.split()
+            word_vectors = [self.word2vec_model.wv[word] for word in words if word in self.word2vec_model.wv]
+            text_vector = np.mean(word_vectors, axis=0) if word_vectors else np.zeros(self.word2vec_model.vector_size)
+            text_vector = text_vector.reshape(1, -1)
+        else:
+            raise ValueError("Feature extraction method not set.")
+
+        prediction = self.trained_model.predict(text_vector)
+        sentiment = "Positive" if prediction[0] == 1 else "Negative"
+        return sentiment
 
 
 
@@ -180,8 +208,8 @@ if __name__ == "__main__":
     data_path = "../../data/movie_reviews/IMDB_Dataset.csv"
     df = pd.read_csv(data_path)
 
-    # taking only first 1000 records for local training
-    df = df.iloc[:25000]
+    # new review
+    new_review = "The movie was absolutely brilliant and fantastic!"
 
     # basic analysis
     df_analyzer = DataFrameAnalyzer(df)
@@ -208,16 +236,30 @@ if __name__ == "__main__":
     # Step 2: Apply Feature Extraction & Train Models
     pipeline.apply_bow()  # Default BoW
     pipeline.train_and_evaluate(model_type="naive_bayes", feature_type="bow")  # Naive Bayes with BoW
+    predicted_sentiment = pipeline.predict_sentiment(new_review)
+    print("Predicted Sentiment:", predicted_sentiment)
+
+    pipeline.apply_bow()  # Default BoW
     pipeline.train_and_evaluate(model_type="random_forest", feature_type="bow")  # Random Forest with BoW
+    predicted_sentiment = pipeline.predict_sentiment(new_review)
+    print("Predicted Sentiment:", predicted_sentiment)
 
     pipeline.apply_bow(max_features=3000)  # BoW with top 3000 words
     pipeline.train_and_evaluate(model_type="random_forest", feature_type="bow")  # Random Forest with BoW (3000)
+    predicted_sentiment = pipeline.predict_sentiment(new_review)
+    print("Predicted Sentiment:", predicted_sentiment)
 
     pipeline.apply_bow(ngram_range=(2,2), max_features=5000)  # N-grams with BoW
     pipeline.train_and_evaluate(model_type="random_forest", feature_type="bow")  # Random Forest with N-grams
+    predicted_sentiment = pipeline.predict_sentiment(new_review)
+    print("Predicted Sentiment:", predicted_sentiment)
 
     pipeline.apply_tfidf()  # TF-IDF feature extraction
     pipeline.train_and_evaluate(model_type="random_forest", feature_type="tfidf")  # Random Forest with TF-IDF
+    predicted_sentiment = pipeline.predict_sentiment(new_review)
+    print("Predicted Sentiment:", predicted_sentiment)
 
     pipeline.apply_word2vec()  # Word2Vec feature extraction
     pipeline.train_and_evaluate(model_type="random_forest", feature_type="word2vec")  # Random Forest with Word2Vec
+    predicted_sentiment = pipeline.predict_sentiment(new_review)
+    print("Predicted Sentiment:", predicted_sentiment)
