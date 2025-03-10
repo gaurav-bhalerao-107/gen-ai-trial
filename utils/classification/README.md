@@ -143,7 +143,7 @@ This project provides a **modular sentiment analysis pipeline** that efficiently
 ### **Author**
 👨‍💻 **Developed by:** Gaurav Bhalerao  
 📧 **Contact:** gauravbhalerao107@gmail.com  
-🌐 **GitHub:** [Your GitHub Profile]  
+🌐 **GitHub:** https://github.com/gaurav-bhalerao-107
 
 ---
 

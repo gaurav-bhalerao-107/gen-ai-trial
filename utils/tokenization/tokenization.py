@@ -1,84 +1,70 @@
 import re
-
-# NLTK download
 import nltk
-nltk.download('punkt_tab')
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.stem.porter import PorterStemmer
+from nltk.stem import WordNetLemmatizer
+import spacy
+
+# Download required NLTK resources
+nltk.download('punkt')
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 
-# tokenization
-from nltk.tokenize import word_tokenize,sent_tokenize
+class TextTokenizer:
+    def __init__(self):
+        self.ps = PorterStemmer()
+        self.wordnet_lemmatizer = WordNetLemmatizer()
+        try:
+            self.nlp = spacy.load('en_core_web_sm')
+        except:
+            print("SpaCy model not found! Run the following command:")
+            print("python -m spacy download en_core_web_sm")
+            self.nlp = None
 
-# stemming
-from nltk.stem.porter import PorterStemmer
-ps = PorterStemmer()
+    def word_tokenization(self, text):
+        return text.split()
 
-# lemmatization
-from nltk.stem import WordNetLemmatizer
+    def sentence_tokenization(self, text):
+        return text.split('.')
 
-wordnet_lemmatizer = WordNetLemmatizer()
+    def regex_word_tokenization(self, text):
+        tokens = re.findall("[\w']+", text)
+        return tokens
 
-# word tokenization
-def word_tokenization(text):
-    return text.split()
+    def regex_sentence_tokenization(self, text):
+        tokens = re.compile('[.!?] ').split(text)
+        return tokens
 
-# sentence tokenization
-def sentence_tokenization(text):
-    return text.split('.')
+    def nltk_word_tokenization(self, text):
+        return word_tokenize(text)
 
-# regex word tokenization
-def regex_word_tokenization(text):
-    tokens = re.findall("[\w']+", text)
-    return tokens
+    def nltk_sentence_tokenization(self, text):
+        return sent_tokenize(text)
 
-# regex sentence tokenization
-def regex_sentence_tokenization(text):
-    tokens = re.compile('[.!?] ').split(text)
-    return tokens
+    def spacy_word_tokenization(self, text):
+        if self.nlp:
+            return [token.text for token in self.nlp(text)]
+        return []
 
-# NLTK word tokenization
-def nltk_word_tokenization(text):
-    return word_tokenize(text)
+    def stem_words(self, text):
+        return " ".join([self.ps.stem(word) for word in text.split()])
 
-# NLTK sentence tokenization
-def nltk_sentence_tokenization(text):
-    return sent_tokenize(text)
+    def lemmatize_words(self, text):
+        word_tokens = self.nltk_word_tokenization(text)
+        tokens = " ".join([self.wordnet_lemmatizer.lemmatize(word, pos='v') for word in word_tokens])
+        return tokens
 
-
-##### spacy #####
-# spaCy is a fast, efficient, and powerful Natural Language Processing (NLP) library designed for 
-# text analysis, tokenization, named entity recognition (NER), dependency parsing, and more. 
-# It is widely used in AI and machine learning applications.
-def spacy_word_tokenization(text):
-    import spacy
-    # RUN BELOW COMMAND - The en_core_web_sm model is downloaded separately by spaCy and stored outside of pip's package management system.
+# Example usage
+if __name__ == "__main__":
+    text = "The students are studying hard for their upcoming exams. Teachers are teaching in the classrooms."
+    tokenizer = TextTokenizer()
     
-    try:
-        nlp = spacy.load('en_core_web_sm')
-    except:
-        print("SpaCy model not found! Run the following command:")
-        print("python -m spacy download en_core_web_sm")
-        return ""
-    
-    nlp = spacy.load('en_core_web_sm')
-    spacy_tokens = nlp(text)
-    return spacy_tokens
-
-##### stemming #####
-# Stemming is a text-processing technique in Natural Language Processing (NLP) used to reduce words to their base form (stem/root word) by removing prefixes and suffixes. 
-# The goal is to convert related words into the same root form, but it doesn't always guarantee meaningful words.
-def stem_words(text):
-    return " ".join([ps.stem(word) for word in text.split()])
-
-##### lemmatization #####
-# Lemmatization is a text-processing technique used in Natural Language Processing (NLP) to reduce words to their base or root form (known as a lemma). 
-# Unlike stemming, lemmatization considers the context and meaning of the word, ensuring that the transformed word remains a valid one.
-def lemmatize_words(text):
-    word_tokens = nltk_word_tokenization(text)
-    tokens =  " ".join([wordnet_lemmatizer.lemmatize(word, pos='v') for word in word_tokens])
-    return tokens
-
-
-
-
-
+    print("Word Tokenization:", tokenizer.word_tokenization(text))
+    print("Sentence Tokenization:", tokenizer.sentence_tokenization(text))
+    print("Regex Word Tokenization:", tokenizer.regex_word_tokenization(text))
+    print("Regex Sentence Tokenization:", tokenizer.regex_sentence_tokenization(text))
+    print("NLTK Word Tokenization:", tokenizer.nltk_word_tokenization(text))
+    print("NLTK Sentence Tokenization:", tokenizer.nltk_sentence_tokenization(text))
+    print("Spacy Word Tokenization:", tokenizer.spacy_word_tokenization(text))
+    print("Stemming:", tokenizer.stem_words(text))
+    print("Lemmatization:", tokenizer.lemmatize_words(text))

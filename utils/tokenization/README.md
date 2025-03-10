@@ -1,206 +1,101 @@
-# **📌 Text Preprocessing for NLP**
-This repository provides **text preprocessing functions** for **tokenization, stemming, and lemmatization** using **Python, NLTK, spaCy, and regex**. These functions help prepare text data for **Machine Learning, AI, and NLP applications**.
+# Text Tokenization and Preprocessing
 
----
+## Overview
+This project implements a **Text Tokenization and Preprocessing Pipeline** using **Natural Language Processing (NLP) techniques**. It processes text by breaking it down into tokens (words and sentences), applies stemming and lemmatization, and provides multiple methods for text tokenization, including **regex-based, NLTK-based, and spaCy-based approaches**.
 
-## **🚀 Features**
-- **Tokenization**: Splitting text into words or sentences.
-- **Stemming**: Reducing words to their root form.
+### **Key Features**
+- **Tokenization**: Splitting text into words and sentences using different techniques.
+- **Stemming**: Reducing words to their root form using Porter Stemmer.
 - **Lemmatization**: Converting words to their dictionary base form.
-- **Regex-based tokenization**: Splitting text using patterns.
-- **spaCy tokenization**: Advanced NLP tokenization using deep learning models.
+- **Support for Multiple Libraries**: Uses **NLTK, Regex, and spaCy** for NLP tasks.
 
 ---
 
-## **📌 Prerequisites**
-### **1️⃣ Install Required Libraries**
-```bash
-pip install nltk spacy
+## **Techniques Used**
+
+### **1. Tokenization**
+Tokenization is the process of **splitting text into smaller units** (words or sentences). It helps in preparing text data for further analysis.
+
+#### ✅ **Example:**
 ```
-### **2️⃣ Download Required NLP Models**
-```bash
-python -m spacy download en_core_web_sm
+Input: "The students are studying hard for their exams. Teachers are teaching."
+
+Word Tokenization:
+['The', 'students', 'are', 'studying', 'hard', 'for', 'their', 'exams.', 'Teachers', 'are', 'teaching.']
+
+Sentence Tokenization:
+['The students are studying hard for their exams.', 'Teachers are teaching.']
 ```
+
+#### **Types of Tokenization in the Code:**
+| Tokenization Method | Library Used |
+|---------------------|--------------|
+| **Word Tokenization (split method)** | Python String Split |
+| **Sentence Tokenization (split method)** | Python String Split |
+| **Regex Word Tokenization** | Regex (`re.findall`) |
+| **Regex Sentence Tokenization** | Regex (`re.compile`) |
+| **NLTK Word Tokenization** | `nltk.word_tokenize()` |
+| **NLTK Sentence Tokenization** | `nltk.sent_tokenize()` |
+| **spaCy Word Tokenization** | `spacy.load('en_core_web_sm')` |
+
 
 ---
 
-## **📂 Function Overview**
-### **🔹 Tokenization (Breaking Text into Words or Sentences)**
-**Tokenization** is the process of splitting text into **words (word tokenization)** or **sentences (sentence tokenization).**
+### **2. Stemming**
+Stemming reduces words to their root form by **removing prefixes and suffixes**.
 
-#### **1. Word Tokenization**
-```python
-def word_tokenization(text):
-    return text.split()
+#### ✅ **Example:**
 ```
-**Example:**
-```python
-word_tokenization("Hello world! NLP is awesome.")
-```
-**Output:**
-```python
-['Hello', 'world!', 'NLP', 'is', 'awesome.']
+Input: "studying studies studied"
+After Stemming: "study studi studi"
 ```
 
-#### **2. NLTK Word Tokenization**
-```python
-from nltk.tokenize import word_tokenize
-def nltk_word_tokenization(text):
-    return word_tokenize(text)
-```
-**Example:**
-```python
-nltk_word_tokenization("I'm learning NLP, it's exciting!")
-```
-**Output:**
-```python
-['I', "'m", 'learning', 'NLP', ',', 'it', "'s", 'exciting', '!']
-```
-
-#### **3. Regex Word Tokenization**
-```python
-import re
-def regex_word_tokenization(text):
-    tokens = re.findall("[\w']+", text)
-    return tokens
-```
-**Example:**
-```python
-regex_word_tokenization("I'm happy!")
-```
-**Output:**
-```python
-["I'm", "happy"]
-```
-
-#### **4. Sentence Tokenization (NLTK)**
-```python
-from nltk.tokenize import sent_tokenize
-def nltk_sentence_tokenization(text):
-    return sent_tokenize(text)
-```
-**Example:**
-```python
-nltk_sentence_tokenization("Hello world! How are you? NLP is fun.")
-```
-**Output:**
-```python
-['Hello world!', 'How are you?', 'NLP is fun.']
-```
+| **Advantages** | **Disadvantages** |
+|---------------|------------------|
+| Fast and efficient | May generate non-meaningful words |
+| Works well for basic NLP tasks | Loses contextual meaning |
 
 ---
 
-## **🔹 Stemming (Reducing Words to Their Root Form)**
-**Stemming** reduces words to their **base form** but doesn’t always preserve meaning.
+### **3. Lemmatization**
+Lemmatization converts words to their **dictionary base form** by considering the context and meaning of the word.
 
-```python
-from nltk.stem.porter import PorterStemmer
-ps = PorterStemmer()
+#### ✅ **Example:**
+```
+Input: "studying studies studied"
+After Lemmatization: "study study study"
+```
 
-def stem_words(text):
-    return " ".join([ps.stem(word) for word in text.split()])
-```
-**Example:**
-```python
-stem_words("running studies happily")
-```
-**Output:**
-```python
-'run studi happili'
-```
+| **Advantages** | **Disadvantages** |
+|---------------|------------------|
+| Provides valid words | Slightly slower than stemming |
+| Contextually accurate | Requires additional NLP resources |
 
 ---
 
-## **🔹 Lemmatization (Finding Dictionary Root Forms)**
-Lemmatization reduces words to their **actual dictionary root** while preserving meaning.
+## **Best Practices**
+✅ Use **lemmatization instead of stemming** when accuracy is more important than speed.  
+✅ Use **spaCy for large-scale NLP tasks**, as it is optimized for performance.  
+✅ Choose **Regex tokenization** when you need full control over splitting patterns.  
+✅ Use **NLTK tokenization** for compatibility with classical NLP techniques.  
 
-```python
-from nltk.stem import WordNetLemmatizer
-wordnet_lemmatizer = WordNetLemmatizer()
 
-def lemmatize_words(text):
-    word_tokens = nltk_word_tokenization(text)
-    tokens = " ".join([wordnet_lemmatizer.lemmatize(word, pos='v') for word in word_tokens])
-    return tokens
-```
-**Example:**
-```python
-lemmatize_words("running studies happily")
-```
-**Output:**
-```python
-'run study happily'
-```
+## **Project Workflow**
+1️⃣ **Text Tokenization (Word & Sentence)**  
+2️⃣ **Apply Stemming**  
+3️⃣ **Apply Lemmatization**  
+4️⃣ **Compare Results from Different Tokenization Methods**  
 
 ---
 
-## **🔹 spaCy Tokenization (Advanced NLP)**
-```python
-import spacy
-
-def spacy_word_tokenization(text):
-    nlp = spacy.load("en_core_web_sm")
-    spacy_tokens = nlp(text)
-    return [token.text for token in spacy_tokens]
-```
-**Example:**
-```python
-spacy_word_tokenization("I'm learning NLP, it's fun!")
-```
-**Output:**
-```python
-['I', "'m", 'learning', 'NLP', ',', 'it', "'s", 'fun', '!']
-```
+## **Conclusion**
+This project provides a **modular NLP pipeline** that efficiently processes text by tokenizing, stemming, and lemmatizing it. The use of multiple techniques ensures flexibility and adaptability for real-world applications.
 
 ---
 
-## **📌 Advantages & Disadvantages**
-| Method | Advantages | Disadvantages |
-|--------|------------|--------------|
-| **Stemming** | Fast, lightweight | May not return real words |
-| **Lemmatization** | Meaningful words, context-aware | Slower, requires POS tagging |
-| **Regex Tokenization** | Simple, customizable | Doesn't handle complex language rules |
-| **NLTK Tokenization** | Pre-trained, handles punctuation | Requires model downloads |
-| **spaCy Tokenization** | Most accurate, deep learning-based | Requires large models |
+### **Author**
+👨‍💻 **Developed by:** Gaurav Bhalerao
+📧 **Contact:** gauravbhalerao107@gmail.com  
+🌐 **GitHub:** https://github.com/gaurav-bhalerao-107
 
 ---
-
-## **📌 Best Practices**
-✅ **Use NLTK for simple tokenization and stemming**  
-✅ **Use spaCy for large-scale NLP projects**  
-✅ **Use regex for custom tokenization rules**  
-✅ **Use lemmatization over stemming for meaningful words**  
-
----
-
-## **📌 Where to Use?**
-- **Chatbots**: Tokenization for understanding messages.
-- **Search Engines**: Stemming to match similar words.
-- **AI & Machine Learning**: Lemmatization for feature engineering.
-
----
-
-## **📌 Running the Script**
-### **🔹 Clone the Repository**
-```bash
-git clone https://github.com/your-username/text-preprocessing-nlp.git
-cd text-preprocessing-nlp
-```
-### **🔹 Install Dependencies**
-```bash
-pip install -r requirements.txt
-python -m spacy download en_core_web_sm
-```
-### **🔹 Run the Python Script**
-```bash
-python text_preprocessing.py
-```
-
----
-
-## **🚀 Conclusion**
-This script provides a **comprehensive set of NLP preprocessing tools** for **tokenization, stemming, and lemmatization**. Choose the **right technique** based on **your project’s needs**! 🎯
-
-🔹 **Found this useful? Give it a ⭐ on GitHub!**  
-
-Let me know if you need any modifications! 😊🚀

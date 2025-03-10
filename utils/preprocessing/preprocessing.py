@@ -1,88 +1,60 @@
 import re
-
-# NLTK stopwords
-from nltk.corpus import stopwords
+import string
 import nltk
+from nltk.corpus import stopwords
+from textblob import TextBlob
+import emoji
+
 nltk.download('stopwords')
 
-# remove html tags
-def remove_html_tags(text):
-    pattern = re.compile('<.*?>')
-    return pattern.sub(r'', text)
-
-# remove url
-def remove_url(text):
-    pattern = re.compile(r'https?://\S+|www\.\S+')
-    return pattern.sub(r'', text)
-
-# remove punctuations
-def remove_punctuations(text):
-    import string,time
-    punctuations = string.punctuation
-
-    return text.translate(str.maketrans('', '', punctuations))
-
-
-# chat conversation
-def chat_conversation(text):
-    chat_words = {
-        'AFAIK':'As Far As I Know',
-        'AFK':'Away From Keyboard',
-        'ASAP':'As Soon As Possible',
-        "FYI": "For Your Information",
-        "ASAP": "As Soon As Possible",
-        "BRB": "Be Right Back",
-        "BTW": "By The Way",
-        "OMG": "Oh My God",
-        "IMO": "In My Opinion",
-        "LOL": "Laugh Out Loud",
-        "TTYL": "Talk To You Later",
-        "GTG": "Got To Go",
-        "TTYT": "Talk To You Tomorrow",
-        "IDK": "I Don't Know",
-        "TMI": "Too Much Information",
-        "IMHO": "In My Humble Opinion",
-        "ICYMI": "In Case You Missed It",
-        "AFAIK": "As Far As I Know",
-        "BTW": "By The Way",
-        "FAQ": "Frequently Asked Questions",
-        "TGIF": "Thank God It's Friday",
-        "FYA": "For Your Action",
-        "ICYMI": "In Case You Missed It",
-    }
-
-    new_words = []
-    for word in text.split():
-        if word.upper() in chat_words:
-            new_words.append(chat_words[word.upper()])
-        else:
-            new_words.append(word)
-    return ' '.join(new_words)
-
-
-# incorrect text handling
-def handle_incorrect_text(text):
-    from textblob import TextBlob
-
-    textBlb = TextBlob(text)
-    correct = textBlb.correct().string
-    return correct
-
-
-def remove_stopwords(text):
-    new_text = []
-
-    for word in text.split():
-        if word in stopwords.words('english'):
-            new_text.append('')
-        else:
-            new_text.append(word)
-    x = new_text[:]
-    new_text.clear()
-    return " ".join(x)
-
-
-def replace_emoji(text):
-    import emoji
+class TextPreprocessor:
+    def __init__(self):
+        self.stop_words = set(stopwords.words('english'))
+        self.chat_words = {
+            'AFAIK': 'As Far As I Know', 'AFK': 'Away From Keyboard', 'ASAP': 'As Soon As Possible',
+            'FYI': 'For Your Information', 'BRB': 'Be Right Back', 'BTW': 'By The Way', 'OMG': 'Oh My God',
+            'IMO': 'In My Opinion', 'LOL': 'Laugh Out Loud', 'TTYL': 'Talk To You Later', 'GTG': 'Got To Go',
+            'TTYT': 'Talk To You Tomorrow', 'IDK': "I Don't Know", 'TMI': 'Too Much Information',
+            'IMHO': 'In My Humble Opinion', 'ICYMI': 'In Case You Missed It', 'FAQ': 'Frequently Asked Questions',
+            'TGIF': "Thank God It's Friday", 'FYA': 'For Your Action'
+        }
     
-    return emoji.demojize(text)
+    def remove_html_tags(self, text):
+        pattern = re.compile('<.*?>')
+        return pattern.sub(r'', text)
+    
+    def remove_url(self, text):
+        pattern = re.compile(r'https?://\S+|www\.\S+')
+        return pattern.sub(r'', text)
+    
+    def remove_punctuations(self, text):
+        return text.translate(str.maketrans('', '', string.punctuation))
+    
+    def chat_conversation(self, text):
+        new_words = [self.chat_words[word.upper()] if word.upper() in self.chat_words else word for word in text.split()]
+        return ' '.join(new_words)
+    
+    def handle_incorrect_text(self, text):
+        textBlb = TextBlob(text)
+        return textBlb.correct().string
+    
+    def remove_stopwords(self, text):
+        return " ".join([word for word in text.split() if word not in self.stop_words])
+    
+    def replace_emoji(self, text):
+        return emoji.demojize(text)
+
+# Example usage:
+if __name__ == "__main__":
+    text = """🚀 OMG! This AI model is AMAZING!!! 🤖🔥 I just read an article at https://ai-news.com about the future of AI. 
+        BTW, did u see the new iPhone 15 Pro Max? It's sooo expensive! 😩💰 
+        I'll BRB, need to grab some coffee ☕. Also, my friend said the weather is aweeesome today in California 😎🌞. 
+        IDK why people still use old-school phones 📱😂. FYI, AI is gonna change everything ASAP!
+    """
+    preprocessor = TextPreprocessor()
+    text = preprocessor.remove_html_tags(text)
+    text = preprocessor.remove_url(text)
+    text = preprocessor.replace_emoji(text)
+    text = preprocessor.remove_punctuations(text)
+    text = preprocessor.chat_conversation(text)
+    print("Processed Text:", text)
