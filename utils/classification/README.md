@@ -9,6 +9,15 @@ This project implements a **Sentiment Analysis Pipeline** using **Natural Langua
 - **Classification Models**: `Naive Bayes` and `Random Forest`.
 - **Performance Evaluation**: Accuracy and confusion matrix.
 
+
+---
+
+## **Dataset**
+🔴 **Important:** Download the dataset from [this Kaggle link](https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews) and move it to `data/movie_reviews/` directory. Rename the file to **IMDB_Database.csv** before running the script.
+
+---
+
+
 ---
 
 ## **Techniques Used**
